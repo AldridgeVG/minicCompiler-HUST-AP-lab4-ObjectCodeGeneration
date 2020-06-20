@@ -15,9 +15,11 @@ void objectCode(struct codenode *head) {
   }
   struct codenode *h = head, *p;
   int i, j, index, type;
-  /*printf(".data\n");
+
+  printf(".data\n");
   printf(".globl main\n");
-  printf(".text\n");*/
+  printf(".text\n");
+  
   do {
     switch (h->op) {
       // assume only int data
@@ -31,8 +33,6 @@ void objectCode(struct codenode *head) {
           if (isGlbVar(h->opn1.id)) {
             //全局变量，从全局空间取offset
             printf("  lw $t1, %d($t6)\n", h->opn1.offset);
-            // printf("*************************%s
-            // %d\n",h->opn1.id,h->opn1.offset);
           } else {
             //局部变量，从栈顶取offset
             printf("  lw $t1, %d($sp)\n", h->opn1.offset);
@@ -46,7 +46,6 @@ void objectCode(struct codenode *head) {
         } else {
           printf("  sw $t3, %d($sp)\n", h->result.offset);
         }
-        // printf("  sw $t3, %d($sp)\n", h->result.offset);
         break;
 
       //所有运算在DIV统一处理
@@ -54,14 +53,12 @@ void objectCode(struct codenode *head) {
       case MINUS:
       case STAR:
       case DIV:
-        // printf("  lw $t1, %d($sp)\n", h->opn1.offset);
         if (isGlbVar(h->opn1.id)) {
           printf("  lw $t1, %d($t6)\n", h->opn1.offset);
 
         } else {
           printf("  lw $t1, %d($sp)\n", h->opn1.offset);
         }
-        // printf("  lw $t2, %d($sp)\n", h->opn2.offset);
         if (isGlbVar(h->opn2.id)) {
           printf("  lw $t2, %d($t6)\n", h->opn2.offset);
 
@@ -85,7 +82,7 @@ void objectCode(struct codenode *head) {
         }
         break;
       case FUNCTION:
-        printf("\n%s:\n", h->result.id);
+        printf("%s:\n", h->result.id);
         if (!strcmp(h->result.id, "main"))  //特殊处理main
         {
           for (i = 0; symbolTable.symbols[i].flag == 'Q'; i++);
@@ -141,9 +138,8 @@ void objectCode(struct codenode *head) {
         //向前循环定位到第一个实参的结点
         for (p = h, i = 0; i < symbolTable.symbols[h->opn1.offset].paramnum;i++)
           p = p->prior;
-        // symbolTable.symbols[h->opn1.offset].offset
 
-        //开活动记录空间
+        //开辟活动记录空间
         printf("  move $t0,$sp\n");  //保存当前函数的sp到$t0中，为了取实参表达式的值
         printf("  addi $sp, $sp, -%d\n", symbolTable.symbols[h->opn1.offset].offset);
         printf("  sw $ra,0($sp)\n");  //保留返回地址
@@ -164,7 +160,7 @@ void objectCode(struct codenode *head) {
         }
         printf("  jal %s\n", h->opn1.id);  //恢复返回地址
         printf("  lw $ra,0($sp)\n");       //恢复返回地址
-        //释放活动记录空间
+        //移动栈顶，释放活动记录空间
         printf("  addi $sp,$sp,%d\n",symbolTable.symbols[h->opn1.offset].offset);
         printf("  sw $v0,%d($sp)\n", h->result.offset);  //取返回值
 
