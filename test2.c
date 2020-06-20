@@ -3,7 +3,8 @@ int func(int a,int b)
 {
 	if(a<1)
 		return a+b;
-	return func(a-1,b+1);
+	else
+		return func(a-1,b+1);
 }
 int main()
 {
