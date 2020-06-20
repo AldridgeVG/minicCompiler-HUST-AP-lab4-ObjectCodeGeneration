@@ -101,3 +101,4 @@ void semantic_Analysis(struct node *T);//Î´Íê
 void Exp(struct node *T);
 void boolExp(struct node *T);
 void semantic_Analysis0(struct node *T);
+void objectCodeOut(struct codenode *head);

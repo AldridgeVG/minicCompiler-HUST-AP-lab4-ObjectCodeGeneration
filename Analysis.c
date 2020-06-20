@@ -440,7 +440,7 @@ void semantic_Analysis(struct node *T) {
 
         //prnIR(T->code);
         printf("**进**\n");*/
-        prn_symbol();
+        //prn_symbol();
         symbol_scope_TX.TX[symbol_scope_TX.top++] = symbolTable.index;
         T->width = 0;
         T->code = NULL;
@@ -1396,5 +1396,8 @@ void semantic_Analysis0(struct node *T) {
   symbol_scope_TX.top = 1;
   T->offset = 0;  //外部变量在数据区的偏移量
   semantic_Analysis(T);
-  prnIR(T->code);
+  //prnIR(T->code);
+  
+  //ObjCode Generation
+  objectCode(T->code);
 }

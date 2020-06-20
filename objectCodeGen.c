@@ -48,6 +48,8 @@ void objectCode(struct codenode *head) {
         }
         // printf("  sw $t3, %d($sp)\n", h->result.offset);
         break;
+
+      //所有运算在DIV统一处理
       case PLUS:
       case MINUS:
       case STAR:
@@ -66,8 +68,6 @@ void objectCode(struct codenode *head) {
         } else {
           printf("  lw $t2, %d($sp)\n", h->opn2.offset);
         }
-
-        //deal with mmpd
         if (h->op == PLUS)
           printf("  add $t3,$t1,$t2\n");
         else if (h->op == MINUS)
@@ -78,7 +78,6 @@ void objectCode(struct codenode *head) {
           printf("  div $t1, $t2\n");
           printf("  mflo $t3\n");
         }
-        // printf("  sw $t3, %d($sp)\n", h->result.offset);
         if (isGlbVar(h->result.id)) {
           printf("  sw $t3, %d($t6)\n", h->result.offset);
         } else {
@@ -89,14 +88,11 @@ void objectCode(struct codenode *head) {
         printf("\n%s:\n", h->result.id);
         if (!strcmp(h->result.id, "main"))  //特殊处理main
         {
-          for (i = 0; symbolTable.symbols[i].flag == 'Q'; i++)
-            ;
-          // printf("****************%d\n",i);
+          for (i = 0; symbolTable.symbols[i].flag == 'Q'; i++);
           printf("  addi $sp, $sp, -%d\n", i * 4);
           i = 0;
           printf("  move $t6, $sp\n");  // t6存最初始的sp值
-          printf("  addi $sp, $sp, -%d\n",
-                 symbolTable.symbols[h->result.offset].offset);
+          printf("  addi $sp, $sp, -%d\n",symbolTable.symbols[h->result.offset].offset);
         }
         break;
       case PARAM:  //直接跳到后面一条
@@ -107,23 +103,22 @@ void objectCode(struct codenode *head) {
       case GOTO:
         printf("  j %s\n", h->result.id);
         break;
+
+      //在NEQ统一处理
       case JLE:
       case JLT:
       case JGE:
       case JGT:
       case EQ:
       case NEQ:
-        // printf("  lw $t1, %d($sp)\n", h->opn1.offset);
         if (isGlbVar(h->opn1.id)) {
           printf("  lw $t1, %d($t6)\n", h->opn1.offset);
-
         } else {
           printf("  lw $t1, %d($sp)\n", h->opn1.offset);
         }
-        // printf("  lw $t2, %d($sp)\n", h->opn2.offset);
+
         if (isGlbVar(h->opn2.id)) {
           printf("  lw $t2, %d($t6)\n", h->opn2.offset);
-
         } else {
           printf("  lw $t2, %d($sp)\n", h->opn2.offset);
         }
@@ -137,13 +132,13 @@ void objectCode(struct codenode *head) {
           printf("  bgt $t1,$t2,%s\n", h->result.id);
         else if (h->op == EQ)
           printf("  beq $t1,$t2,%s\n", h->result.id);
-        else
+        else //NEQ
           printf("  bne $t1,$t2,%s\n", h->result.id);
         break;
       case ARG:  //直接跳到后面一条,回头反查
         break;
       case CALL:
-        //循环定位到第一个实参的结点
+        //向前循环定位到第一个实参的结点
         for (p = h, i = 0; i < symbolTable.symbols[h->opn1.offset].paramnum;i++)
           p = p->prior;
         // symbolTable.symbols[h->opn1.offset].offset
@@ -162,7 +157,7 @@ void objectCode(struct codenode *head) {
             printf("  lw $t1, %d($t0)\n", p->result.offset);
           }
           printf("  move $t3,$t1\n");
-          //送到被调用函数的形参单元
+          //存到被调用函数的形参单元
           printf("  sw $t3,%d($sp)\n",symbolTable.symbols[i].offset);
           p = p->next;
           i++;
@@ -171,17 +166,14 @@ void objectCode(struct codenode *head) {
         printf("  lw $ra,0($sp)\n");       //恢复返回地址
         //释放活动记录空间
         printf("  addi $sp,$sp,%d\n",symbolTable.symbols[h->opn1.offset].offset);
-
         printf("  sw $v0,%d($sp)\n", h->result.offset);  //取返回值
 
         break;
       case RETURN:
-        // printf("  lw $v0,%d($sp)\n", h->result.offset); //返回值送到$v0
         if (isGlbVar(h->result.id)) {
-          printf("  lw $v0, %d($t6)\n", h->result.offset);
-          // printf("*************************%s\n",h->result.id);
+          printf("  move $v0, %d($t6)\n", h->result.offset);
         } else {
-          printf("  lw $v0, %d($sp)\n", h->result.offset);
+          printf("  move $v0, %d($sp)\n", h->result.offset);
         }
         printf("  jr $ra\n");
         break;
