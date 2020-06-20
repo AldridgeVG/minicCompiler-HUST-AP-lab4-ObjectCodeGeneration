@@ -74,7 +74,7 @@ char *createLabel() {
   static int no = 1;
   char s[10];
   itoa(no++, s, 10);
-  return strcats("label-", s);
+  return strcats("label", s);
 }
 
 //生成一个临时变量的名字

@@ -167,9 +167,11 @@ void objectCode(struct codenode *head) {
         break;
       case RETURN:
         if (isGlbVar(h->result.id)) {
-          printf("  move $v0, %d($t6)\n", h->result.offset);
+          //printf("  move $v0, %d($t6)\n", h->result.offset);
+          printf("  lw $v0, %d($t6)\n", h->result.offset);
         } else {
-          printf("  move $v0, %d($sp)\n", h->result.offset);
+          //printf("  move $v0, %d($sp)\n", h->result.offset);
+          printf("  lw $v0, %d($sp)\n", h->result.offset);
         }
         printf("  jr $ra\n");
         break;
